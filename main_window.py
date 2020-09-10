@@ -19,30 +19,17 @@ class MainWindow(QMainWindow):
 
         # Class variables to hold state of check boxes
         self.two_handed_enabled = True
-        self.inspire_courage_enabled = False
+        self.weapon_song_enabled = False
         self.haste_enabled = False
-        self.raging_enabled = False
         self.power_attack_enabled = False
-        self.enlarged_enabled = False
-        self.surprise_accuracy_enabled = False
-        self.powerful_blow_enabled = False
-        self.flanking_enabled = False
-        self.deadly_juggernaut_enabled = False
 
         # Connections to toggle state on check box click
         self.ui.two_handed_check_box.clicked.connect(self.two_handed_toggled)
         self.ui.inspire_courage_check_box.clicked.connect(self.inspire_courage_toggled)
         self.ui.haste_check_box.clicked.connect(self.haste_toggled)
-        self.ui.raging_check_box.clicked.connect(self.raging_toggled)
         self.ui.power_attack_check_box.clicked.connect(self.power_attack_toggled)
-        self.ui.enlarged_check_box.clicked.connect(self.enlarged_toggled)
-        self.ui.surprise_accuracy_check_box.clicked.connect(self.surprise_accuracy_toggled)
-        self.ui.powerful_blow_check_box.clicked.connect(self.powerful_blow_toggled)
-        self.ui.flanking_bonus_check_box.clicked.connect(self.flanking_toggled)
-        self.ui.deadly_juggernaut_check_box.clicked.connect(self.deadly_juggernaut_toggled)
 
         # Auto update when spin box toggled
-        self.ui.kills_spin_box.valueChanged.connect(self.update_output)
         self.ui.num_hits_spin_box.valueChanged.connect(self.update_output)
 
         # Initialize output with initial settings
@@ -53,48 +40,21 @@ class MainWindow(QMainWindow):
         self.update_output()
 
     def inspire_courage_toggled(self, state):
-        self.inspire_courage_enabled = state
+        self.weapon_song_enabled = state
         self.update_output()
 
     def haste_toggled(self, state):
         self.haste_enabled = state
         self.update_output()
 
-    def raging_toggled(self, state):
-        self.raging_enabled = state
-        self.update_output()
-
     def power_attack_toggled(self, state):
         self.power_attack_enabled = state
-        self.update_output()
-
-    def enlarged_toggled(self, state):
-        self.enlarged_enabled = state
-        self.update_output()
-
-    def surprise_accuracy_toggled(self, state):
-        self.surprise_accuracy_enabled = state
-        self.update_output()
-
-    def powerful_blow_toggled(self, state):
-        self.powerful_blow_enabled = state
-        self.update_output()
-
-    def flanking_toggled(self, state):
-        self.flanking_enabled = state
-        self.update_output()
-
-    def deadly_juggernaut_toggled(self, state):
-        self.deadly_juggernaut_enabled = state
         self.update_output()
 
     def update_output(self):
         # Calculate strength bonus
         strength = self.configuration['STR']
-        if self.raging_enabled:
-            strength += self.configuration['RAGE_STR_BONUS']
-        if self.enlarged_enabled:
-            strength += self.configuration['ENLARGE_STR_BONUS']
+
         effective_strength_bonus = int((strength - 10) / 2)
 
         # Calculate number of attacks
@@ -120,8 +80,11 @@ class MainWindow(QMainWindow):
         num_hits = int(self.ui.num_hits_spin_box.value())
 
         # Calculate damage
-        die, damage = self.calculate_damage(effective_strength_bonus)
+        damage = self.calculate_damage(effective_strength_bonus)
         damage *= num_hits
+
+        die = self.configuration["DAMAGE_DIE"]
+
         self.ui.damage_label.setText(f'Damage: {num_hits * die[0]}d{die[1]} + {damage}')
 
         crit_mod = self.configuration["WEAPON_CRITICAL_MOD"]
@@ -129,9 +92,10 @@ class MainWindow(QMainWindow):
             f'Critical Damage: {num_hits * crit_mod * die[0]}d{die[1]} + {crit_mod * damage}')
 
     def calculate_attack_bonus(self, effective_strength_bonus):
-        attack_bonus = self.configuration['BAB'] + self.configuration['WEAPON_BONUS'] + effective_strength_bonus
+        # TODO: don't hard code weapon focus
+        attack_bonus = self.configuration['BAB'] + self.configuration['WEAPON_BONUS'] + effective_strength_bonus + 1
 
-        if self.inspire_courage_enabled:
+        if self.weapon_song_enabled:
             attack_bonus += self.configuration['INSPIRE']
 
         if self.haste_enabled:
@@ -139,18 +103,6 @@ class MainWindow(QMainWindow):
 
         if self.power_attack_enabled:
             attack_bonus += self.configuration['POWER_ATTACK_ATTACK']
-
-        if self.enlarged_enabled:
-            attack_bonus += self.configuration['ENLARGE']
-
-        if self.surprise_accuracy_enabled:
-            attack_bonus += self.configuration['SURPRISE_ACCURACY']
-
-        if self.flanking_enabled:
-            attack_bonus += self.configuration['FLANKING']
-
-        if self.deadly_juggernaut_enabled:
-            attack_bonus += self.ui.kills_spin_box.value()
 
         return attack_bonus
 
@@ -162,24 +114,13 @@ class MainWindow(QMainWindow):
             strength_damage = int(strength_damage * self.configuration['TWO_HANDED_MULTI'])
         damage += strength_damage
 
-        if self.powerful_blow_enabled:
-            damage += self.configuration['POWERFUL_BLOW']
-
         power_attack_damage = 6
         if self.two_handed_enabled:
             power_attack_damage = int(power_attack_damage * self.configuration['TWO_HANDED_MULTI'])
         if self.power_attack_enabled:
             damage += power_attack_damage
 
-        if self.inspire_courage_enabled:
+        if self.weapon_song_enabled:
             damage += self.configuration['INSPIRE']
 
-        if self.deadly_juggernaut_enabled:
-            damage += self.ui.kills_spin_box.value()
-
-        if self.enlarged_enabled:
-            die = self.configuration['ENLARGE_DAMAGE_DIE']
-        else:
-            die = self.configuration['DAMAGE_DIE']
-
-        return die, damage
+        return damage
