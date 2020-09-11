@@ -1,4 +1,6 @@
 import json
+import sys
+from pathlib import Path
 
 # Third party imports
 from PyQt5.QtWidgets import (QMainWindow)
@@ -15,7 +17,7 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.configuration = json.load(open("configuration.json", "r"))
+        self.configuration = json.load(open(resource_path("configuration.json"), "r"))
 
         # Class variables to hold state of check boxes
         self.two_handed_enabled = True
@@ -124,3 +126,8 @@ class MainWindow(QMainWindow):
             damage += self.configuration['INSPIRE']
 
         return damage
+
+
+def resource_path(relative_path):
+    base_path = Path(getattr(sys, '_MEIPASS', Path(sys.argv[0]).resolve().parent))
+    return base_path / relative_path
