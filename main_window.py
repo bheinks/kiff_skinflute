@@ -94,8 +94,8 @@ class MainWindow(QMainWindow):
             f'Critical Damage: {num_hits * crit_mod * die[0]}d{die[1]} + {crit_mod * damage}')
 
     def calculate_attack_bonus(self, effective_strength_bonus):
-        # TODO: don't hard code weapon focus
-        attack_bonus = self.configuration['BAB'] + self.configuration['WEAPON_BONUS'] + effective_strength_bonus + 1
+        attack_bonus = (self.configuration['BAB'] + self.configuration['WEAPON_BONUS'] +
+                        effective_strength_bonus + self.configuration['WEAPON_FOCUS'])
 
         if self.weapon_song_enabled:
             attack_bonus += self.configuration['INSPIRE']
