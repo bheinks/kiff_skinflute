@@ -4,6 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['kiff_skinflute.py'],
+             pathex=['C:\\Users\\Mike\\PycharmProjects\\kiff_skinflute'],
              binaries=[],
              datas=[('configuration.json', '.')],
              hiddenimports=[],
@@ -18,15 +19,19 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
           [],
+          exclude_binaries=True,
           name='kiff_skinflute',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
           console=False )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='kiff_skinflute')
